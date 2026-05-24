@@ -1,139 +1,348 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AETHER BRAWL - Highly Polished Canvas Fighting Game</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Custom Arcade Aesthetics */
-        body {
-            background-color: #0b0c10;
-            user-select: none;
-            overflow-x: hidden;
-        }
-        .arcade-shadow {
-            box-shadow: 0 0 40px rgba(100, 255, 218, 0.2), 0 0 15px rgba(233, 69, 96, 0.4);
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #1f2833; }
-        ::-webkit-scrollbar-thumb { background: #64ffda; border-radius: 3px; }
+      /* Custom Arcade Aesthetics */
+      body {
+        background-color: #0b0c10;
+        user-select: none;
+        overflow-x: hidden;
+      }
+      .arcade-shadow {
+        box-shadow:
+          0 0 40px rgba(100, 255, 218, 0.2),
+          0 0 15px rgba(233, 69, 96, 0.4);
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f2833;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #64ffda;
+        border-radius: 3px;
+      }
     </style>
-</head>
-<body class="min-h-screen text-gray-100 font-sans flex flex-col items-center justify-between p-4">
-
-    <header class="w-full max-w-6xl flex items-center justify-between py-2 border-b border-gray-800">
-        <div class="flex items-center space-x-3">
-            <div class="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-            <h1 class="text-2xl font-black tracking-wider bg-gradient-to-r from-red-500 via-yellow-400 to-emerald-400 bg-clip-text text-transparent">
-                AETHER BRAWL
-            </h1>
-        </div>
-        <div class="flex items-center space-x-4 text-sm">
-            <button id="btn-toggle-sound" class="px-4 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-full text-emerald-400 font-mono transition border border-emerald-500/30 flex items-center gap-2">
-                <span>🔊 Audio: ON</span>
-            </button>
-            <button id="btn-help" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 font-mono transition">
-                🎮 Controls Guide
-            </button>
-        </div>
+  </head>
+  <body
+    class="min-h-screen text-gray-100 font-sans flex flex-col items-center justify-between p-4"
+  >
+    <header
+      class="w-full max-w-6xl flex items-center justify-between py-2 border-b border-gray-800"
+    >
+      <div class="flex items-center space-x-3">
+        <div class="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+        <h1
+          class="text-2xl font-black tracking-wider bg-gradient-to-r from-red-500 via-yellow-400 to-emerald-400 bg-clip-text text-transparent"
+        >
+          AETHER BRAWL
+        </h1>
+      </div>
+      <div class="flex items-center space-x-4 text-sm">
+        <button
+          id="btn-toggle-sound"
+          class="px-4 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-full text-emerald-400 font-mono transition border border-emerald-500/30 flex items-center gap-2"
+        >
+          <span>🔊 Audio: ON</span>
+        </button>
+        <button
+          id="btn-help"
+          class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 font-mono transition"
+        >
+          🎮 Controls Guide
+        </button>
+      </div>
     </header>
 
-    <main class="w-full max-w-6xl flex-1 flex flex-col items-center justify-center my-4">
-        <div class="relative w-full aspect-video max-w-[1280px] bg-black rounded-2xl overflow-hidden arcade-shadow border-2 border-gray-800 flex items-center justify-center">
-            <div id="canvas-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-50 transition-opacity duration-500 pointer-events-none">
-                <div class="w-16 h-16 border-4 border-t-emerald-500 border-r-transparent border-b-red-500 border-l-transparent rounded-full animate-spin mb-4"></div>
-                <p class="text-lg font-mono text-gray-300 tracking-widest">INITIALIZING AETHER ENGINE...</p>
-                <p class="text-xs text-gray-500 mt-2 font-mono">Synthesizing audio channels & procedural shaders</p>
-            </div>
-
-            <canvas id="game-canvas" width="1280" height="720" class="w-full h-full block cursor-pointer"></canvas>
-
-            <div id="html-hud" class="absolute top-4 left-4 right-4 pointer-events-none hidden justify-between items-start z-10">
-                <div class="bg-gray-900/80 backdrop-blur border border-gray-700 rounded-xl p-3 flex items-center gap-4 min-w-[240px]">
-                    <div class="relative">
-                        <div id="hud-p1-avatar" class="w-12 h-12 rounded-lg bg-red-600 border-2 border-white flex items-center justify-center font-bold text-xl">V</div>
-                        <div id="hud-p1-stocks" class="absolute -bottom-2 -right-2 bg-black border border-white px-1.5 py-0.5 rounded text-xs font-mono text-yellow-400 font-bold">3</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-400 font-mono font-bold" id="hud-p1-name">P1 (VALKYRIE)</div>
-                        <div class="text-3xl font-black italic tracking-tighter transition-colors duration-200" id="hud-p1-pct">0%</div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-900/80 backdrop-blur border border-gray-700 px-6 py-2 rounded-xl text-center">
-                    <div class="text-[10px] text-gray-400 font-mono tracking-widest">TIME</div>
-                    <div class="text-2xl font-mono font-bold text-emerald-400" id="hud-timer">3:00</div>
-                </div>
-
-                <div class="bg-gray-900/80 backdrop-blur border border-gray-700 rounded-xl p-3 flex items-center gap-4 min-w-[240px] flex-row-reverse text-right">
-                    <div class="relative">
-                        <div id="hud-p2-avatar" class="w-12 h-12 rounded-lg bg-blue-600 border-2 border-white flex items-center justify-center font-bold text-xl">G</div>
-                        <div id="hud-p2-stocks" class="absolute -bottom-2 -left-2 bg-black border border-white px-1.5 py-0.5 rounded text-xs font-mono text-yellow-400 font-bold">3</div>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-400 font-mono font-bold" id="hud-p2-name">CPU (GOLIATH)</div>
-                        <div class="text-3xl font-black italic tracking-tighter transition-colors duration-200" id="hud-p2-pct">0%</div>
-                    </div>
-                </div>
-            </div>
+    <main
+      class="w-full max-w-6xl flex-1 flex flex-col items-center justify-center my-4"
+    >
+      <div
+        class="relative w-full aspect-video max-w-[1280px] bg-black rounded-2xl overflow-hidden arcade-shadow border-2 border-gray-800 flex items-center justify-center"
+      >
+        <div
+          id="canvas-loader"
+          class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-50 transition-opacity duration-500 pointer-events-none"
+        >
+          <div
+            class="w-16 h-16 border-4 border-t-emerald-500 border-r-transparent border-b-red-500 border-l-transparent rounded-full animate-spin mb-4"
+          ></div>
+          <p class="text-lg font-mono text-gray-300 tracking-widest">
+            INITIALIZING AETHER ENGINE...
+          </p>
+          <p class="text-xs text-gray-500 mt-2 font-mono">
+            Synthesizing audio channels & procedural shaders
+          </p>
         </div>
 
-        <div id="controls-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition">
-            <div class="bg-gray-900 border border-gray-700 rounded-2xl max-w-2xl w-full p-6 space-y-6 text-left shadow-2xl relative">
-                <button id="btn-close-help" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl bg-gray-800 w-8 h-8 rounded-full flex items-center justify-center font-bold">×</button>
-                <h2 class="text-2xl font-black text-emerald-400 flex items-center gap-2">
-                    <span>🕹️</span> Aether Brawl Combat Manual
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                        <h3 class="font-bold text-red-400 mb-2 font-mono pb-1 border-b border-gray-800">PLAYER 1 (Keyboard Left)</h3>
-                        <ul class="space-y-2 text-gray-300">
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">A / D</strong> : Move Left / Right</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">W</strong> : Jump (Double Jump supported)</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">S</strong> : Fast Fall / Drop Through Soft Platforms</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">F</strong> : Neutral Light / Combos</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">G</strong> : Heavy Smash Attack</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">Shift</strong> : High-Speed Dash</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">E</strong> : Character Emote / Taunt</li>
-                        </ul>
-                    </div>
-                    <div class="bg-gray-950 p-4 rounded-xl border border-gray-800">
-                        <h3 class="font-bold text-blue-400 mb-2 font-mono pb-1 border-b border-gray-800">PLAYER 2 (Keyboard Right)</h3>
-                        <ul class="space-y-2 text-gray-300">
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">← / →</strong> : Move Left / Right</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">↑</strong> : Jump (Double Jump supported)</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">↓</strong> : Fast Fall / Drop Through Soft Platforms</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">K / Numpad 1</strong> : Neutral Light / Combos</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">L / Numpad 2</strong> : Heavy Smash Attack</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">Ctrl / Numpad 0</strong> : High-Speed Dash</li>
-                            <li><strong class="text-white bg-gray-800 px-1 rounded font-mono">/</strong> : Character Emote / Taunt</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-emerald-950/40 border border-emerald-800/60 p-4 rounded-xl text-xs text-emerald-300 space-y-1">
-                    <p class="font-bold">✨ ADVANCED MECHANICS & TIPS:</p>
-                    <p>• <strong>Knockback Scaling</strong>: Smash mechanics apply! As your percentage rises, hits knock you significantly further.</p>
-                    <p>• <strong>Blast Zones</strong>: Getting launched past the red warning barriers destroys your stock.</p>
-                    <p>• <strong>Recovery</strong>: Combine Double Jumps and Heavy Directional attacks mid-air to recover to the floating islands.</p>
-                    <p>• <strong>Hitstun & FreezeFrames</strong>: Heavy smash impacts trigger temporary hit-pause and visceral screen shake.</p>
-                </div>
-                <div class="text-center">
-                    <button id="btn-modal-gotit" class="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-lg transition font-mono tracking-wide">
-                        LET'S BRAWL
-                    </button>
-                </div>
+        <canvas
+          id="game-canvas"
+          width="1280"
+          height="720"
+          class="w-full h-full block cursor-pointer"
+        ></canvas>
+
+        <div
+          id="html-hud"
+          class="absolute top-4 left-4 right-4 pointer-events-none hidden justify-between items-start z-10"
+        >
+          <div
+            class="bg-gray-900/80 backdrop-blur border border-gray-700 rounded-xl p-3 flex items-center gap-4 min-w-[240px]"
+          >
+            <div class="relative">
+              <div
+                id="hud-p1-avatar"
+                class="w-12 h-12 rounded-lg bg-red-600 border-2 border-white flex items-center justify-center font-bold text-xl"
+              >
+                V
+              </div>
+              <div
+                id="hud-p1-stocks"
+                class="absolute -bottom-2 -right-2 bg-black border border-white px-1.5 py-0.5 rounded text-xs font-mono text-yellow-400 font-bold"
+              >
+                3
+              </div>
             </div>
+            <div>
+              <div
+                class="text-xs text-gray-400 font-mono font-bold"
+                id="hud-p1-name"
+              >
+                P1 (VALKYRIE)
+              </div>
+              <div
+                class="text-3xl font-black italic tracking-tighter transition-colors duration-200"
+                id="hud-p1-pct"
+              >
+                0%
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-gray-900/80 backdrop-blur border border-gray-700 px-6 py-2 rounded-xl text-center"
+          >
+            <div class="text-[10px] text-gray-400 font-mono tracking-widest">
+              TIME
+            </div>
+            <div
+              class="text-2xl font-mono font-bold text-emerald-400"
+              id="hud-timer"
+            >
+              3:00
+            </div>
+          </div>
+
+          <div
+            class="bg-gray-900/80 backdrop-blur border border-gray-700 rounded-xl p-3 flex items-center gap-4 min-w-[240px] flex-row-reverse text-right"
+          >
+            <div class="relative">
+              <div
+                id="hud-p2-avatar"
+                class="w-12 h-12 rounded-lg bg-blue-600 border-2 border-white flex items-center justify-center font-bold text-xl"
+              >
+                G
+              </div>
+              <div
+                id="hud-p2-stocks"
+                class="absolute -bottom-2 -left-2 bg-black border border-white px-1.5 py-0.5 rounded text-xs font-mono text-yellow-400 font-bold"
+              >
+                3
+              </div>
+            </div>
+            <div>
+              <div
+                class="text-xs text-gray-400 font-mono font-bold"
+                id="hud-p2-name"
+              >
+                CPU (GOLIATH)
+              </div>
+              <div
+                class="text-3xl font-black italic tracking-tighter transition-colors duration-200"
+                id="hud-p2-pct"
+              >
+                0%
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div
+        id="controls-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition"
+      >
+        <div
+          class="bg-gray-900 border border-gray-700 rounded-2xl max-w-2xl w-full p-6 space-y-6 text-left shadow-2xl relative"
+        >
+          <button
+            id="btn-close-help"
+            class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl bg-gray-800 w-8 h-8 rounded-full flex items-center justify-center font-bold"
+          >
+            ×
+          </button>
+          <h2
+            class="text-2xl font-black text-emerald-400 flex items-center gap-2"
+          >
+            <span>🕹️</span> Aether Brawl Combat Manual
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800">
+              <h3
+                class="font-bold text-red-400 mb-2 font-mono pb-1 border-b border-gray-800"
+              >
+                PLAYER 1 (Keyboard Left)
+              </h3>
+              <ul class="space-y-2 text-gray-300">
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >A / D</strong
+                  >
+                  : Move Left / Right
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >W</strong
+                  >
+                  : Jump (Double Jump supported)
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >S</strong
+                  >
+                  : Fast Fall / Drop Through Soft Platforms
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >F</strong
+                  >
+                  : Neutral Light / Combos
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >G</strong
+                  >
+                  : Heavy Smash Attack
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >Shift</strong
+                  >
+                  : High-Speed Dash
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >E</strong
+                  >
+                  : Character Emote / Taunt
+                </li>
+              </ul>
+            </div>
+            <div class="bg-gray-950 p-4 rounded-xl border border-gray-800">
+              <h3
+                class="font-bold text-blue-400 mb-2 font-mono pb-1 border-b border-gray-800"
+              >
+                PLAYER 2 (Keyboard Right)
+              </h3>
+              <ul class="space-y-2 text-gray-300">
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >← / →</strong
+                  >
+                  : Move Left / Right
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >↑</strong
+                  >
+                  : Jump (Double Jump supported)
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >↓</strong
+                  >
+                  : Fast Fall / Drop Through Soft Platforms
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >K / Numpad 1</strong
+                  >
+                  : Neutral Light / Combos
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >L / Numpad 2</strong
+                  >
+                  : Heavy Smash Attack
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >Ctrl / Numpad 0</strong
+                  >
+                  : High-Speed Dash
+                </li>
+                <li>
+                  <strong class="text-white bg-gray-800 px-1 rounded font-mono"
+                    >/</strong
+                  >
+                  : Character Emote / Taunt
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            class="bg-emerald-950/40 border border-emerald-800/60 p-4 rounded-xl text-xs text-emerald-300 space-y-1"
+          >
+            <p class="font-bold">✨ ADVANCED MECHANICS & TIPS:</p>
+            <p>
+              • <strong>Knockback Scaling</strong>: Smash mechanics apply! As
+              your percentage rises, hits knock you significantly further.
+            </p>
+            <p>
+              • <strong>Blast Zones</strong>: Getting launched past the red
+              warning barriers destroys your stock.
+            </p>
+            <p>
+              • <strong>Recovery</strong>: Combine Double Jumps and Heavy
+              Directional attacks mid-air to recover to the floating islands.
+            </p>
+            <p>
+              • <strong>Hitstun & FreezeFrames</strong>: Heavy smash impacts
+              trigger temporary hit-pause and visceral screen shake.
+            </p>
+          </div>
+          <div class="text-center">
+            <button
+              id="btn-modal-gotit"
+              class="px-8 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-lg transition font-mono tracking-wide"
+            >
+              LET'S BRAWL
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
 
-    <footer class="w-full max-w-6xl text-center py-4 text-xs text-gray-500 border-t border-gray-800/80 space-y-1">
-        <p>AABB Physics • Frame-Independent Vectors • Separate Hurtbox/Hitbox Logic • Smash Damage Formula • Custom Synthesis Web Audio API</p>
-        <p class="text-gray-600">Created completely self-contained in standard HTML5 Canvas without external dependencies.</p>
+    <footer
+      class="w-full max-w-6xl text-center py-4 text-xs text-gray-500 border-t border-gray-800/80 space-y-1"
+    >
+      <p>
+        AABB Physics • Frame-Independent Vectors • Separate Hurtbox/Hitbox Logic
+        • Smash Damage Formula • Custom Synthesis Web Audio API
+      </p>
+      <p class="text-gray-600">
+        Created completely self-contained in standard HTML5 Canvas without
+        external dependencies.
+      </p>
     </footer>
 
     <script src="./JS/game.js"></script>
     <script src="./JS/myCode.js?v=10"></script>
-</body>
+  </body>
 </html>
